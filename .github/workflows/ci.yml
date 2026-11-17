@@ -1,0 +1,50 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+
+permissions: { contents: read }
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Dummy, non-functional values: CI never needs (or receives) real secrets. Public content falls back to built-in defaults.
+      NEXT_PUBLIC_SITE_URL: https://ci.example.test
+      NEXT_PUBLIC_SUPABASE_URL: https://ciciciciciciciciciic.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_ci_placeholder
+      SUPABASE_SERVICE_ROLE_KEY: sb_secret_ci_placeholder
+      QR_SIGNING_SECRET: ci-placeholder-ci-placeholder-ci-placeholder-0000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: HTTP smoke tests against the production build
+        run: |
+          npm start -- -p 3000 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/ >/dev/null && break; sleep 1; done
+          E2E_BASE_URL=http://localhost:3000 npm run test:e2e
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env: { PGHOST: localhost, PGUSER: postgres, PGPASSWORD: postgres }
+    steps:
+      - uses: actions/checkout@v4
+      - name: SQL suites (fresh database per suite)
+        run: bash supabase/tests/run.sh

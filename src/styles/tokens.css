@@ -1,0 +1,21 @@
+/* Influencia brand tokens — single source of truth.
+   Initial values from the brief; sampled against the Edition 3 poster in Phase 2. */
+:root {
+  --brand-crimson: #b30e19;
+  --brand-maroon-deep: #790609;
+  --brand-maroon: #80070c;
+  --brand-maroon-base: #730305; /* poster bottom, sampled */
+  --brand-white: #ffffff;
+  --brand-warm-white: #f7f3f0;
+  --brand-charcoal: #1c1717;
+  --brand-gold: #d6ad50;
+
+  --surface: var(--brand-warm-white);
+  --on-surface: var(--brand-charcoal);
+  --accent: var(--brand-crimson);
+
+  --gradient-hero: linear-gradient(180deg, var(--brand-crimson) 0%, var(--brand-maroon) 70%, var(--brand-maroon-base) 100%);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 0.75rem;
+}

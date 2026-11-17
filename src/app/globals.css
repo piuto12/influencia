@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+@theme inline {
+  --color-crimson: var(--brand-crimson);
+  --color-maroon: var(--brand-maroon);
+  --color-maroon-deep: var(--brand-maroon-deep);
+  --color-warm: var(--brand-warm-white);
+  --color-charcoal: var(--brand-charcoal);
+  --color-gold: var(--brand-gold);
+  --font-display: var(--font-anton);
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-outfit);
+}
+
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-outfit), system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
