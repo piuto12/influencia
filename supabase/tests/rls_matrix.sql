@@ -15,3 +15,8 @@ select case when count(*) = 0 then 'PASS no API-executable SECURITY DEFINER func
 select case when count(*) = 0 then 'PASS append-only tables reject UPDATE/DELETE for authenticated' else 'FAIL mutable ledger grants: ' || string_agg(table_name, ',') end
   from information_schema.role_table_grants where grantee='authenticated' and table_schema='public' and privilege_type in ('UPDATE','DELETE')
    and table_name in ('audit_logs','payment_events','registration_history','payment_webhooks');
+select case when not has_column_privilege('anon','event_editions','whatsapp_group_url','select')
+             and not has_column_privilege('authenticated','event_editions','whatsapp_group_url','select')
+             and has_column_privilege('anon','event_editions','title','select')
+            then 'PASS WhatsApp group link is not readable through the public API (public columns still are)'
+            else 'FAIL whatsapp_group_url exposure' end;

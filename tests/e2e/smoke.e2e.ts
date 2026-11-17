@@ -24,6 +24,20 @@ describe("public site", () => {
   });
 });
 
+describe("cost-abuse surface", () => {
+  it("image optimizer refuses foreign hosts, including other Supabase projects", async () => {
+    for (const u of ["https://evil-attacker.example/x.png", "https://some-other-project.supabase.co/storage/v1/object/public/public-media/x.png"]) {
+      const r = await get(`/_next/image?url=${encodeURIComponent(u)}&w=64&q=75`); expect([400, 403], u).toContain(r.status);
+    }
+  });
+  it("no sensitive files or source maps are served", async () => {
+    for (const p of ["/.env", "/.env.local", "/.git/config", "/package.json", "/next.config.ts", "/supabase/migrations/0001_core.sql", "/scripts/backup.sh"]) expect((await get(p)).status, p).toBe(404);
+  });
+  it("no cross-origin browser access to our API", async () => {
+    const r = await get("/api/health", { headers: { Origin: "https://evil.example" } }); expect(r.headers.get("access-control-allow-origin")).toBeNull();
+  });
+});
+
 describe("security headers", () => {
   it("are present on public and admin pages", async () => {
     for (const p of ["/", "/admin/login"]) {
@@ -55,10 +69,10 @@ describe("certificate verification", () => {
 });
 
 describe("health endpoint", () => {
-  it("returns only a status flag and is never cached", async () => {
+  it("returns only a status flag and is edge-cached briefly (no per-call database load)", async () => {
     const r = await get("/api/health"); expect([200, 503]).toContain(r.status);
     const body = await r.json(); expect(Object.keys(body).sort()).toEqual(["db", "status"]); expect(["ok", "degraded"]).toContain(body.status);
-    expect(r.headers.get("cache-control")).toContain("no-store");
+    expect(r.headers.get("cache-control")).toContain("s-maxage");
   });
 });
 

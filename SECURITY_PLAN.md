@@ -55,3 +55,10 @@ Verification evidence is listed in `IMPLEMENTATION_STATUS.md` (Phase 8 report). 
 
 ## Approval gates (human required)
 Production deploy · production DB migration · destructive migrations/deletions · enabling live payment keys · connecting a custom domain · sending real emails to participants · turning on `ADMIN_MFA=required`.
+
+## Exposure audit (2026-11-17) — "is any API open that shouldn't be?"
+Run `npm run audit:exposure -- --site <url> --supabase <url> --key <publishable key>` any time (read-only; 18 checks across the data API, functions, storage, auth, realtime and the website).
+- ✅ Verified closed on production: 20 sensitive tables, all anonymous writes, 22 internal functions, file upload and listing in both buckets, API schema listing, public sign-up, anonymous sign-in, config/source files, cross-site API calls, admin pages/exports.
+- 🔧 Found and fixed in code (migration `0017` + `next.config.ts` + health cache): (1) the WhatsApp group link column was readable through the public data API; (2) Vercel's image optimizer would fetch images from ANY Supabase project (free image quota abuse) — now restricted to our own storage path; (3) `/api/health` ran a database query on every call — now edge-cached for 30 s. CSP image/connect sources also narrowed to our own Supabase host.
+- ⬜ **Owner action:** turn OFF public access to Realtime in each Supabase project (Dashboard → Realtime → Settings). The app does not use Realtime, but anonymous clients can currently open channels and count against free connection/message quotas.
+- 🟡 Not yet mitigated: bot registrations (CAPTCHA/Turnstile not added; email acknowledgements to third-party addresses become an abuse vector once email is configured); Vercel Hobby has a small free image-optimization and function quota — consider Vercel's firewall rules and Pro before launch.

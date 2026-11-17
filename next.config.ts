@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const dev = process.env.NODE_ENV !== "production";
 
+// Only OUR Supabase project may be fetched/optimised or connected to (a wildcard would let anyone use our free image quota).
+const supabaseHost = (() => { try { return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").hostname; } catch { return null; } })();
+const sb = supabaseHost ?? "*.supabase.co";
+
 /**
  * Content-Security-Policy. Scripts keep 'unsafe-inline' because Next.js emits inline bootstrap/RSC scripts and a
  * nonce-based policy would force every page to render dynamically (losing static caching). Everything else is tightly allow-listed.
@@ -11,11 +15,11 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' https://checkout.razorpay.com${dev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com",
+  `img-src 'self' data: blob: https://${sb} https://i.ytimg.com`,
   "font-src 'self' data:",
-  "media-src 'self' blob: https://*.supabase.co",
+  `media-src 'self' blob: https://${sb}`,
   "frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://api.razorpay.com https://checkout.razorpay.com",
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com${dev ? " ws: http://localhost:*" : ""}`,
+  `connect-src 'self' https://${sb} wss://${sb} https://api.razorpay.com https://lumberjack.razorpay.com${dev ? " ws: http://localhost:*" : ""}`,
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -39,7 +43,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
-  images: { remotePatterns: [{ protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" }] },
+  images: { remotePatterns: supabaseHost ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/public-media/**" }] : [] },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
