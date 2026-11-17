@@ -6,10 +6,11 @@
 import { createClient } from "@supabase/supabase-js";
 
 const arg = (n) => { const i = process.argv.indexOf(`--${n}`); return i > -1 ? process.argv[i + 1] : undefined; };
+const SUPABASE_ONLY = process.argv.includes("--supabase-only"); // skip the website checks (e.g. when a CDN bot challenge is active)
 const SITE = (arg("site") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/$/, "");
 const SB = (arg("supabase") ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
 const KEY = arg("key") ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-if (!SITE || !SB || !KEY) { console.error("Need --site, --supabase and --key (or the NEXT_PUBLIC_* env vars)."); process.exit(2); }
+if ((!SITE && !SUPABASE_ONLY) || !SB || !KEY) { console.error("Need --site, --supabase and --key (or the NEXT_PUBLIC_* env vars)."); process.exit(2); }
 if (/^sb_secret_|service_role/.test(KEY)) { console.error("Refusing to run with a SECRET key. Use the publishable key."); process.exit(2); }
 
 const results = [];
@@ -58,6 +59,7 @@ console.log("7. Realtime (not used by this app)");
   await c.removeAllChannels();
   status === "SUBSCRIBED" ? rec("FAIL", "anonymous clients can join public realtime channels (uses your free connection/message quota)", "turn off public access in Supabase → Realtime settings") : rec("PASS", "public realtime channels are not open to anonymous clients"); }
 
+if (!SUPABASE_ONLY) {
 console.log("8. Website");
 for (const p of ["/.env", "/.env.local", "/.git/config", "/package.json", "/next.config.ts", "/supabase/migrations/0001_core.sql", "/scripts/backup.sh", "/vercel.json"]) { const r = await site(p); r.status === 200 ? rec("FAIL", `${p} is publicly served`) : null; }
 rec("PASS", "no project/config files are publicly served");
@@ -65,6 +67,8 @@ for (const u of ["https://evil-attacker.example/x.png", "https://some-other-proj
 { const r = await site("/api/health", { headers: { Origin: "https://evil.example" } }); r.headers.get("access-control-allow-origin") ? rec("FAIL", "API allows cross-site browser calls") : rec("PASS", "no cross-origin browser access to the API"); rec(/s-maxage/.test(r.headers.get("cache-control") ?? "") ? "PASS" : "WARN", "health endpoint is edge-cached (cannot be used to hammer the database)"); }
 for (const p of ["/admin", "/admin/participants", "/admin/export/registrations", "/admin/certificates/pdf?all=1"]) { const r = await site(p); r.status === 307 && /\/admin\/login/.test(r.headers.get("location") ?? "") ? null : rec("FAIL", `${p} is reachable without signing in`, `HTTP ${r.status}`); }
 rec("PASS", "admin pages and exports require sign-in");
+
+} else console.log("8. Website — skipped (--supabase-only)");
 
 const fails = results.filter((r) => r.level === "FAIL").length, warns = results.filter((r) => r.level === "WARN").length;
 console.log(`\n${fails ? "✗" : "✓"} ${results.filter((r) => r.level === "PASS").length} passed, ${warns} warning(s), ${fails} FAILED`);
