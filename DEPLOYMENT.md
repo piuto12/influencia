@@ -28,7 +28,7 @@ git branch -M main
 git remote add origin git@github.com:<you>/influencia.git
 git push -u origin main
 ```
-GitHub Actions (`.github/workflows/ci.yml`) then runs lint, typecheck, unit tests, build, HTTP smoke tests and the SQL suites on every push. CI uses placeholder values only — it never needs your real keys. *(The workflow file is written but has not run yet.)*
+GitHub Actions (`.github/workflows/ci.yml`) then runs lint, typecheck, unit tests, build, HTTP smoke tests and the SQL suites on every push. CI uses placeholder values only — it never needs your real keys. *(The workflow has run once on GitHub and passed: app job and database job.)*
 
 ## 3. Create the production Supabase project 🔒
 1. New project → region **ap-south-1**, strong database password (save it in a password manager).

@@ -140,3 +140,8 @@ The owner enrolled an authenticator app, signed out and back in with the code: *
 - **dev project untouched:** identical counts before and after (1 test participant/registration/payment/certificate/check-in, 6 audit rows, 1 admin).
 - **Advisors (security):** only `citext` in public (deliberate) and `rate_limits` RLS-without-policy (intentional deny-all; service role only).
 - **Still to do for production (owner):** Auth settings (disable sign-ups, URL configuration, leaked-password protection), copy the production keys into Vercel (never into `.env.local`), create the first super admin + enrol MFA, Vercel project + env vars, set real start time/fee/UPI/bank/WhatsApp link, publish Privacy/Terms, plan upgrade/backups. Nothing in Vercel or billing has been touched. These doc updates are not yet committed to git.
+
+## Code pushed to GitHub (2026-11-17)
+- Private repository `eldokj/influencia`, branch `main`, 201 files, 2 commits authored with the account's GitHub noreply identity. No `.env*`, backups, dumps or keys on GitHub (verified against the repository tree); `.env.example` is present.
+- **GitHub Actions CI ran for the first time and passed**: job `app` (lint, typecheck, unit tests, build, 45 HTTP smoke checks, production dependency audit) and job `database` (all SQL suites on fresh Postgres). The earlier caveat that the workflow had never run is closed.
+- Push used the GitHub CLI (official v2.104.0 build, checksum verified) signed in via browser device flow by the owner; it needed the extra `workflow` permission to create `.github/workflows/ci.yml`. The owner can revoke it under GitHub Settings -> Applications.
