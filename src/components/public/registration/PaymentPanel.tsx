@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { beginRazorpay, finishRazorpay, loadPaymentView, selectPaymentMethod, submitPaymentProof, type PaymentViewWithQr } from "@/modules/payments/actions";
 import { buildUpiUri } from "@/modules/payments/upi-uri";
 import { formatMoney } from "@/modules/payments/fees";
+import { isOfflineMethod } from "@/modules/payments/rules";
 import { inputCls } from "./Field";
 
 const PROOF_ERRORS: Record<string, string> = {
@@ -108,7 +109,7 @@ export function PaymentPanel({ reference, contact }: { reference: string; contac
             </dl>)}
           {method.code === "razorpay" && <button type="button" disabled={pending} onClick={payRazorpay} className="rounded-full bg-crimson px-8 py-4 text-sm font-semibold uppercase tracking-[0.15em] text-white hover:bg-maroon disabled:opacity-60">Pay securely online</button>}
           {method.code === "venue" && <p className="text-sm">Quote reference <strong>{reference}</strong> at the venue desk. Your seat stays unconfirmed until the payment is recorded by the team.</p>}
-          {method.code !== "razorpay" && <ProofForm onSubmit={onProof} pending={pending} />}
+          {method.code !== "razorpay" && !isOfflineMethod(method.code) && <ProofForm onSubmit={onProof} pending={pending} />}
           <button type="button" className="text-sm underline" onClick={() => setView({ ...view, payment: null })}>Use a different method</button>
         </div>)}
 

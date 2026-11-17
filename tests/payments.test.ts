@@ -199,3 +199,18 @@ describe("admin permissions", () => {
   });
   it("super admin can verify", async () => { const p = repo(); await adminVerifyPayment(sup, "p1", p); expect(p.calls[0]).toBe("verify:p1"); });
 });
+
+import { adminCanReject, adminCanVerify, isOfflineMethod } from "@/modules/payments/rules";
+describe("offline (pay at venue) payments", () => {
+  it("can be verified by an admin while still pending; online/UPI payments cannot be verified before a submission", () => {
+    expect(adminCanVerify("pending", "venue")).toBe(true);
+    expect(adminCanVerify("pending", "upi")).toBe(false);
+    expect(adminCanVerify("pending", "razorpay")).toBe(false);
+  });
+  it("verification stays available after a submission; rejection only after a submission", () => {
+    expect(adminCanVerify("proof_submitted", "upi")).toBe(true); expect(adminCanVerify("under_verification", "bank_transfer")).toBe(true);
+    expect(adminCanVerify("verified", "venue")).toBe(false); expect(adminCanVerify("rejected", "venue")).toBe(false);
+    expect(adminCanReject("pending")).toBe(false); expect(adminCanReject("proof_submitted")).toBe(true);
+  });
+  it("only the venue method is offline", () => { expect(isOfflineMethod("venue")).toBe(true); expect(isOfflineMethod("upi")).toBe(false); });
+});

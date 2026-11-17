@@ -9,6 +9,7 @@ import { CATEGORIES } from "@/modules/registration/schemas";
 import { whatsappLink } from "@/modules/notifications/service";
 import { TEMPLATE_LABELS, type TemplateKey } from "@/modules/notifications/templates";
 import { resendNotification } from "@/modules/ops/actions";
+import { adminCanReject, adminCanVerify } from "@/modules/payments/rules";
 
 type Ev = { id: number; event_type: string; from_status: string | null; to_status: string | null; amount: number | null; created_at: string; data: Record<string, unknown> };
 type Pay = { id: string; status: string; method_code: string; amount: number; currency: string; transaction_ref: string | null; rejection_reason: string | null; fee_snapshot?: Record<string, unknown>; created_at: string;
@@ -77,12 +78,12 @@ export default async function Page({ params, searchParams }: { params: Promise<{
               {x.rejection_reason && <p className="mt-1 text-sm text-red-700">Rejected: {x.rejection_reason}</p>}
               {x.fee_snapshot && <p className="mt-1 text-xs text-charcoal/60">Fee snapshot: base {String(x.fee_snapshot.base_fee)} → {String(x.fee_snapshot.final)} (settings v{String(x.fee_snapshot.settings_version)})</p>}
               <p className="mt-2 flex flex-wrap gap-4">{(x.payment_proofs ?? []).map((pr, i) => <ProofButton key={pr.id} id={pr.id} label={`View proof ${i + 1} (${pr.mime.split("/")[1]})`} />)}</p>
-              {canVerify && ["proof_submitted", "under_verification"].includes(x.status) && (
+              {canVerify && adminCanVerify(x.status, x.method_code) && (
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
                   <div className="flex flex-wrap gap-2">
                     {x.status === "proof_submitted" && <form action={reviewPayment}><input type="hidden" name="paymentId" value={x.id} /><input type="hidden" name="back" value={back} /><button className={btnGhost}>Start review</button></form>}
-                    <form action={verifyPayment}><input type="hidden" name="paymentId" value={x.id} /><input type="hidden" name="back" value={back} /><button className={btn}>Verify payment</button></form></div>
-                  <form action={rejectPayment} className="flex gap-2"><input type="hidden" name="paymentId" value={x.id} /><input type="hidden" name="back" value={back} /><input name="reason" required minLength={3} placeholder="Rejection reason" className={field} /><button className={btnGhost}>Reject</button></form>
+                    <form action={verifyPayment}><input type="hidden" name="paymentId" value={x.id} /><input type="hidden" name="back" value={back} /><button className={btn}>{x.status === "pending" ? "Record payment received" : "Verify payment"}</button></form></div>
+                  {adminCanReject(x.status) && <form action={rejectPayment} className="flex gap-2"><input type="hidden" name="paymentId" value={x.id} /><input type="hidden" name="back" value={back} /><input name="reason" required minLength={3} placeholder="Rejection reason" className={field} /><button className={btnGhost}>Reject</button></form>}
                 </div>)}
               {canRefund && ["verified", "partially_refunded"].includes(x.status) && (
                 <form action={refundPayment} className="mt-4 flex flex-wrap gap-2"><input type="hidden" name="paymentId" value={x.id} /><input type="hidden" name="back" value={back} />
