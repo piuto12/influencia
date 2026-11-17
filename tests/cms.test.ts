@@ -3,7 +3,7 @@ import { parseVideoUrl } from "@/modules/content/video";
 import { isValidSlug, slugify } from "@/modules/content/slug";
 import { checkUpload, isSafeMediaPath, mediaUrl, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES } from "@/modules/content/media";
 import { safeHref, DEFAULT_SECTIONS, SECTION_TYPES } from "@/modules/content/sections";
-import { articleSchema, galleryItemSchema, navItemSchema, pageSchema, sectionSchema, socialSchema, testimonialSchema, videoSchema } from "@/modules/content/schemas";
+import { articleSchema, brandingSchema, galleryItemSchema, navItemSchema, pageSchema, sectionSchema, socialSchema, testimonialSchema, videoSchema } from "@/modules/content/schemas";
 
 describe("video embedding", () => {
   it("parses YouTube variants into privacy-enhanced embeds", () => {
@@ -99,5 +99,20 @@ describe("content schemas", () => {
   });
   it("gallery item schema coerces order and flags", () => {
     expect(galleryItemSchema.parse({ caption: " Hi ", sort_order: "3", featured: "on", status: "published" })).toMatchObject({ caption: "Hi", sort_order: 3, featured: true });
+  });
+});
+
+describe("branding (speaker portrait + logo)", () => {
+  const ok = "branding/3f2a9c1e-5b7d-4e8a-9c3f-1a2b3c4d5e6f.png";
+  it("accepts our own branding uploads and defaults the style to cut-out", () => {
+    const r = brandingSchema.parse({ speaker_path: ok, logo_path: "branding/3f2a9c1e-5b7d-4e8a-9c3f-1a2b3c4d5e70.webp" });
+    expect(r.speaker_style).toBe("cutout"); expect(r.speaker_path).toBe(ok);
+    expect(brandingSchema.parse({ speaker_path: ok, speaker_style: "circle" }).speaker_style).toBe("circle");
+    expect(brandingSchema.parse({ speaker_path: ok, speaker_style: "weird" }).speaker_style).toBe("cutout");
+  });
+  it("allows empty slots (remove)", () => { expect(brandingSchema.parse({ speaker_path: "", logo_path: "" })).toMatchObject({ speaker_path: "", logo_path: "" }); });
+  it("rejects other folders, videos, svg, traversal and URLs", () => {
+    for (const bad of ["gallery/3f2a9c1e-5b7d-4e8a-9c3f-1a2b3c4d5e6f.png", "branding/x.mp4", "branding/x.svg", "../branding/x.png", "https://evil.example/x.png", "/branding/x.png"])
+      expect(brandingSchema.safeParse({ speaker_path: bad }).success, bad).toBe(false);
   });
 });

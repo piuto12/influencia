@@ -13,3 +13,4 @@ export const adminPages = async () => ok(await db().from("content_pages").select
 export const adminSocial = async () => ok(await db().from("social_links").select("*"));
 export const adminNav = async () => { const r = await db().from("site_settings").select("value").eq("key", "nav").maybeSingle(); return (r.data?.value as { items?: { label: string; href: string; visible: boolean }[] } | undefined)?.items ?? null; };
 export const adminEditions = async () => ok(await db().from("event_editions").select("id,code,edition_number,title,status,is_featured,starts_at,capacity,registration_open").order("edition_number", { ascending: false }));
+export const adminBranding = async () => { const r = await db().from("site_settings").select("value").eq("key", "branding").maybeSingle(); return (r.data?.value ?? {}) as import("./queries").Branding; };

@@ -1,14 +1,17 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-export function SiteHeaderClient({ nav }: { nav: { href: string; label: string }[] }) {
+export function SiteHeaderClient({ nav, logo, logoAlt }: { nav: { href: string; label: string }[]; logo?: string | null; logoAlt?: string }) {
   const [open, setOpen] = useState(false);
   return (
     <header className="absolute inset-x-0 top-0 z-50">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
-        <Link href="/" className="font-display text-2xl uppercase tracking-wide text-white" onClick={() => setOpen(false)}>Influencia</Link>
+        <Link href="/" className="font-display text-2xl uppercase tracking-wide text-white" onClick={() => setOpen(false)} aria-label="Influencia home">
+          {logo ? <Image src={logo} alt={logoAlt ?? "Influencia"} width={200} height={48} priority className="h-10 w-auto max-w-[11rem] object-contain" /> : "Influencia"}
+        </Link>
         <nav aria-label="Primary" className="hidden items-center gap-7 text-sm text-white/90 lg:flex">
           {nav.map((n) => <Link key={n.href} href={n.href} className="transition hover:text-white hover:underline hover:underline-offset-8">{n.label}</Link>)}
           <Link href="/register" className="rounded-full bg-white px-5 py-2 font-semibold text-crimson transition hover:bg-warm">Reserve Your Seat</Link>

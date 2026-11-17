@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { contacts, edition, nav as defaultNav } from "@/modules/events/site-content";
-import { getNav, getSocialLinks } from "@/modules/content/queries";
+import { getBranding, getNav, getSocialLinks } from "@/modules/content/queries";
+import { mediaUrl } from "@/modules/content/media";
+import Image from "next/image";
 
 export async function Footer() {
-  const [custom, social] = await Promise.all([getNav(), getSocialLinks()]);
+  const [custom, social, branding] = await Promise.all([getNav(), getSocialLinks(), getBranding()]);
+  const logo = mediaUrl(branding.logo_path);
   const nav = custom ? custom.filter((n) => n.visible) : [...defaultNav];
   return (
     <footer className="bg-charcoal text-white/80">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:grid-cols-3">
         <div>
-          <p className="font-display text-3xl uppercase text-white">Influencia</p>
+          {logo ? <Image src={logo} alt={branding.logo_alt || "Influencia"} width={220} height={56} className="h-12 w-auto max-w-[14rem] object-contain" /> : <p className="font-display text-3xl uppercase text-white">Influencia</p>}
           <p className="mt-2 text-sm">{edition.editionLabel} · {edition.dateLabel}<br />{edition.venue}, {edition.city}</p>
         </div>
         <nav aria-label="Footer" className="grid grid-cols-2 gap-2 text-sm">

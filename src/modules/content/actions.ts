@@ -9,7 +9,7 @@ import { parseVideoUrl } from "./video";
 import { slugify } from "./slug";
 import { checkUpload, FOLDERS, isSafeMediaPath, MEDIA_BUCKET, type Folder, type UploadKind } from "./media";
 import { SECTION_TYPES, type SectionType } from "./sections";
-import { articleSchema, editionCreateSchema, galleryItemSchema, navItemSchema, pageSchema, sectionSchema, socialSchema, testimonialSchema, videoSchema } from "./schemas";
+import { articleSchema, brandingSchema, editionCreateSchema, galleryItemSchema, navItemSchema, pageSchema, sectionSchema, socialSchema, testimonialSchema, videoSchema } from "./schemas";
 import { istToIso } from "@/modules/admin/schemas";
 
 const db = () => createAdminClient();
@@ -240,4 +240,18 @@ async function del(fd: FormData, table: string, entity: string, path: string, wi
     await audit(a.adminId, `${entity}.deleted`, entity, id);
   });
   void withCode;
+}
+
+// ---------- branding (speaker portrait + logo) ----------
+export async function saveBranding(fd: FormData) {
+  await run("/admin/settings/branding", "Branding saved. It appears on the site within a minute.", async () => {
+    const a = await requirePermission("settings.manage");
+    const p = brandingSchema.safeParse(form(fd)); if (!p.success) fail("invalid_media");
+    const d = p.data!;
+    const { data: before } = await db().from("site_settings").select("value").eq("key", "branding").maybeSingle();
+    const value = Object.fromEntries(Object.entries({ speaker_path: d.speaker_path, speaker_style: d.speaker_style, speaker_alt: d.speaker_alt, logo_path: d.logo_path, logo_alt: d.logo_alt }).filter(([, v]) => v));
+    const { error } = await db().from("site_settings").upsert({ key: "branding", value, is_public: true }, { onConflict: "key" });
+    if (error) fail(error.message);
+    await audit(a.adminId, "branding.updated", "site_settings", "branding", before?.value ?? null, value);
+  });
 }

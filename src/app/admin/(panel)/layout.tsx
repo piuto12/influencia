@@ -22,6 +22,7 @@ const NAV: { href: string; label: string; perm?: Permission[] }[] = [
   { href: "/admin/media/testimonials", label: "Testimonials", perm: ["media.manage"] },
   { href: "/admin/media/gallery", label: "Gallery", perm: ["media.manage"] },
   { href: "/admin/settings/editions", label: "Editions", perm: ["events.manage"] },
+  { href: "/admin/settings/branding", label: "Branding", perm: ["settings.manage"] },
   { href: "/admin/settings/social", label: "Social media", perm: ["settings.manage"] },
   { href: "/admin/settings/navigation", label: "Navigation", perm: ["settings.manage"] },
   { href: "/admin/audit", label: "Audit log", perm: ["audit.read"] },

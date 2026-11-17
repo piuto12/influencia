@@ -74,3 +74,11 @@ export const editionCreateSchema = z.object({
   starts_at: z.string().optional(), venue_name: txt(160), venue_city: txt(160),
   capacity: z.coerce.number().int().min(0).max(100000),
 });
+
+/** Site branding: speaker portrait + logo. Paths must be our own uploads in the branding/ folder (images only). */
+const brandingPath = z.string().optional().transform((v) => (v ?? "").trim())
+  .refine((v) => v === "" || (isSafeMediaPath(v) && v.startsWith("branding/") && /\.(jpg|png|webp|avif)$/.test(v)), "Invalid image");
+export const brandingSchema = z.object({
+  speaker_path: brandingPath, speaker_style: z.enum(["cutout", "circle"]).catch("cutout"), speaker_alt: txt(120),
+  logo_path: brandingPath, logo_alt: txt(120),
+});

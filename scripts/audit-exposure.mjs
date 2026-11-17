@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Probes a DEPLOYED site + its Supabase project from the outside, as an anonymous attacker would, and reports anything open that shouldn't be.
 // Read-only: it never creates data (writes are attempted only with empty/invalid payloads that must be refused).
 // Usage:  node scripts/audit-exposure.mjs --site https://your-site --supabase https://<ref>.supabase.co --key <publishable key>

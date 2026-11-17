@@ -8,6 +8,8 @@ import { Countdown } from "@/components/motion/Countdown";
 import { ImageReveal } from "@/components/motion/ImageReveal";
 import { Reveal } from "@/components/motion/Reveal";
 import { ButtonLink } from "./Button";
+import { getBranding } from "@/modules/content/queries";
+import { mediaUrl } from "@/modules/content/media";
 
 /** Optional official cut-out. Drop the file in public/brand/speaker/; no placeholder person is ever generated. */
 function speakerSrc() {
@@ -17,8 +19,13 @@ function speakerSrc() {
   return null;
 }
 
-export function Hero() {
-  const photo = speakerSrc();
+export async function Hero() {
+  // Admin-uploaded portrait wins; the file in public/brand/speaker/ is the fallback.
+  const b = await getBranding();
+  const uploaded = mediaUrl(b.speaker_path);
+  const photo = uploaded ?? speakerSrc();
+  const circle = !!uploaded && b.speaker_style === "circle";
+  const alt = b.speaker_alt || edition.speaker;
   return (
     <section className="relative isolate overflow-hidden bg-[image:var(--gradient-hero)] text-white">
       <CircleField className="absolute -left-40 -top-40 -z-10 w-[40rem] opacity-80 sm:w-[52rem]" />
@@ -49,8 +56,12 @@ export function Hero() {
 
         <ImageReveal delay={0.9} className={`relative mx-auto aspect-[4/5] w-full max-w-md ${photo ? "" : "hidden lg:block"}`}>
           <div aria-hidden className="absolute inset-[8%] rounded-full bg-black/15 ring-1 ring-white/25" />
-          {photo ? (
-            <Image src={photo} alt={edition.speaker} fill priority sizes="(min-width:1024px) 40vw, 90vw" className="object-contain object-bottom" />
+          {photo && circle ? (
+            <div className="absolute inset-[8%] overflow-hidden rounded-full ring-2 ring-white/40">
+              <Image src={photo} alt={alt} fill priority sizes="(min-width:1024px) 36vw, 80vw" className="object-cover object-top" />
+            </div>
+          ) : photo ? (
+            <Image src={photo} alt={alt} fill priority sizes="(min-width:1024px) 40vw, 90vw" className="object-contain object-bottom" />
           ) : (
             <div className="absolute inset-0 flex items-end justify-center pb-6 text-center text-xs uppercase tracking-[0.3em] text-white/50">
               {edition.speaker}

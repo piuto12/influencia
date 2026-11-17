@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { Section } from "./Section";
+import { SpeakerPortrait } from "./SpeakerPortrait";
 import { PrpFramework } from "./PrpFramework";
 import { ButtonLink } from "./Button";
 import { Reveal } from "@/components/motion/Reveal";
@@ -19,9 +20,9 @@ export function HomeSection({ s }: { s: SectionRow }) {
   const cta = safeHref(c.cta_href);
   switch (s.type) {
     case "speaker":
-      return <Section {...common} tone="white"><Reveal><div className="max-w-2xl text-lg text-charcoal/80">
+      return <Section {...common} tone="white"><Reveal><div className="flex flex-col items-start gap-8 md:flex-row md:items-center"><SpeakerPortrait /><div className="max-w-2xl text-lg text-charcoal/80">
         {c.body ? <Markdown>{c.body}</Markdown> : <p>Influencia is led personally by {edition.speaker}, who guides every participant through the programme.</p>}
-        <Link href="/about/rashid-gazzali" className="mt-3 inline-block font-semibold text-crimson underline underline-offset-4">Read more</Link></div></Reveal></Section>;
+        <Link href="/about/rashid-gazzali" className="mt-3 inline-block font-semibold text-crimson underline underline-offset-4">Read more</Link></div></div></Reveal></Section>;
     case "about":
       return <Section {...common}>
         <div className="grid gap-10 md:grid-cols-[1.2fr_1fr]">

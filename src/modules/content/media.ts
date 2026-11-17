@@ -17,7 +17,7 @@ export function checkUpload(kind: UploadKind, mime: string, size: number): Uploa
   return { ok: true, ext };
 }
 
-export const FOLDERS = ["gallery", "videos", "thumbnails", "testimonials", "blog", "editions", "misc"] as const;
+export const FOLDERS = ["gallery", "videos", "thumbnails", "testimonials", "blog", "editions", "branding", "misc"] as const;
 export type Folder = (typeof FOLDERS)[number];
 
 /** Public URL for an object path; null-safe. Paths are validated to be relative and traversal-free. */

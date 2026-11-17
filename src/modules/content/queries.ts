@@ -84,3 +84,11 @@ export async function getNav(): Promise<NavItem[] | null> {
   const items = (data?.value as { items?: NavItem[] } | undefined)?.items;
   return Array.isArray(items) && items.length ? items : null;
 }
+
+export interface Branding { speaker_path?: string; speaker_style?: "cutout" | "circle"; speaker_alt?: string; logo_path?: string; logo_alt?: string }
+/** Admin-managed speaker portrait and logo (site_settings key "branding", public). Empty object when nothing is set. */
+export async function getBranding(): Promise<Branding> {
+  "use cache"; cacheTag(CONTENT_TAG); cacheLife("minutes");
+  const { data } = await createPublicClient().from("site_settings").select("value").eq("key", "branding").eq("is_public", true).maybeSingle();
+  return ((data?.value ?? {}) as Branding);
+}
