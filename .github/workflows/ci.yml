@@ -18,7 +18,7 @@ jobs:
       QR_SIGNING_SECRET: ci-placeholder-ci-placeholder-ci-placeholder-0000
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: { node-version: 24, cache: npm }
       - run: npm ci
       - run: npm run lint
