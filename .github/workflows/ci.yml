@@ -17,7 +17,7 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: sb_secret_ci_placeholder
       QR_SIGNING_SECRET: ci-placeholder-ci-placeholder-ci-placeholder-0000
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with: { node-version: 24, cache: npm }
       - run: npm ci
@@ -45,6 +45,6 @@ jobs:
           --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
     env: { PGHOST: localhost, PGUSER: postgres, PGPASSWORD: postgres }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: SQL suites (fresh database per suite)
         run: bash supabase/tests/run.sh
